@@ -1,11 +1,11 @@
-/* Zenith Solar — компанийн сайт. Брэндийн өнгө логоноос: хар хөх #0d336b, нарны шар #f1ba3e. */
+/* Zenith Solar — компанийн сайт. Брэндийн өнгө Brandbook 2024.02-оос: хар хөх #0F336D, шар #ECB43A. */
 
 :root {
-  --navy: #0d336b;
+  --navy: #0f336d;
   --navy-deep: #08214a;
   --navy-ink: #061833;
-  --sun: #f1ba3e;
-  --sun-deep: #d99a14;
+  --sun: #ecb43a;
+  --sun-deep: #c98f12;
   --bg: #ffffff;
   --bg-soft: #f4f6fa;
   --card: #ffffff;
@@ -72,8 +72,14 @@ p { margin: 0 0 1em; }
 }
 .top .wrap { display: flex; align-items: center; gap: 24px; height: 72px; }
 .brand { display: flex; align-items: center; text-decoration: none; }
-.brand img { height: 40px; width: auto; }
-:root[data-theme="dark"] .brand img, .dark-logo .brand img { filter: none; }
+.brand img { height: 44px; width: auto; }
+.brand .logo-dark { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .brand .logo-light { display: none; }
+  :root:not([data-theme="light"]) .brand .logo-dark { display: block; }
+}
+:root[data-theme="dark"] .brand .logo-light { display: none; }
+:root[data-theme="dark"] .brand .logo-dark { display: block; }
 .nav { display: flex; gap: 4px; margin-left: auto; }
 .nav a {
   text-decoration: none; color: var(--ink-soft); font-weight: 600; font-size: .95rem;
@@ -159,7 +165,8 @@ section.soft { background: var(--bg-soft); }
 :root[data-theme="dark"] .head .eyebrow { color: var(--sun); }
 
 .grid { display: grid; gap: 20px; }
-.grid.services { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.grid.services { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.grid.services .card { padding: 24px 22px; }
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 26px; box-shadow: var(--shadow); transition: transform .2s ease, border-color .2s ease;
@@ -207,7 +214,7 @@ section.soft { background: var(--bg-soft); }
   border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
 }
 .filters button[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
-.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; grid-auto-flow: dense; }
 .gallery figure {
   position: relative; margin: 0; border-radius: var(--radius); overflow: hidden; aspect-ratio: 4 / 3;
   background: var(--bg-soft); cursor: zoom-in;
@@ -290,8 +297,31 @@ section.soft { background: var(--bg-soft); }
   .card, .btn, .gallery img { transition: none; }
 }
 
-/* Логоны бичиг хар хөх тул харанхуй горимд цагаан дэвсгэртэй байна. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .brand { background: #fff; padding: 5px 10px; border-radius: 10px; }
+/* ------------------------------------------------------- brand motifs */
+/* Brandbook: хуудас бүрийн доод шар зурвас, аянгын элемент. */
+.top { box-shadow: inset 0 -3px 0 var(--sun); }
+.product, .cta-band { position: relative; overflow: hidden; isolation: isolate; }
+.product::before, .cta-band::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  background: url("img/bolt.svg") no-repeat center / contain; opacity: .07;
 }
-:root[data-theme="dark"] .brand { background: #fff; padding: 5px 10px; border-radius: 10px; }
+.product::before { width: 420px; height: 930px; right: -80px; top: -120px; transform: rotate(14deg); }
+.cta-band::before { width: 150px; height: 330px; right: 32%; top: -60px; transform: rotate(14deg); opacity: .1; }
+.foot { border-top: 0; box-shadow: inset 0 3px 0 var(--sun); }
+.foot .logo-foot { height: 34px; width: auto; }
+.foot .logo-foot.logo-dark { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .foot .logo-foot.logo-light { display: none; }
+  :root:not([data-theme="light"]) .foot .logo-foot.logo-dark { display: block; }
+}
+:root[data-theme="dark"] .foot .logo-foot.logo-light { display: none; }
+:root[data-theme="dark"] .foot .logo-foot.logo-dark { display: block; }
+
+/* ------------------------------------------------------------- licences */
+.licences { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media (max-width: 860px) { .licences { grid-template-columns: 1fr; } }
+.licence { border-top: 4px solid var(--sun); }
+.licence .code { font-family: var(--display); font-weight: 800; font-size: 1.6rem; color: var(--navy); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .licence .code { color: var(--sun); } }
+:root[data-theme="dark"] .licence .code { color: var(--sun); }
+.licence .meta { margin-top: 14px; font-size: .86rem; color: var(--ink-faint); }
