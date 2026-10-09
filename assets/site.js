@@ -178,6 +178,33 @@
     reducedMotion.addListener(handleMotionChange);
   }
 
+  const steps = document.getElementById("steps");
+  if (steps && !reducedMotion.matches) {
+    const stepItems = [...steps.children];
+    let frame = 0;
+
+    const updateSteps = () => {
+      frame = 0;
+      const rect = steps.getBoundingClientRect();
+      const start = window.innerHeight * 0.8;
+      const progress = Math.min(1, Math.max(0, (start - rect.top) / (rect.height + window.innerHeight * 0.3)));
+      steps.style.setProperty("--p", progress.toFixed(3));
+      stepItems.forEach((item, index) => {
+        const at = stepItems.length > 1 ? index / (stepItems.length - 1) : 0;
+        item.classList.toggle("done", progress >= at - 0.001);
+      });
+    };
+
+    const requestUpdate = () => {
+      if (!frame) frame = requestAnimationFrame(updateSteps);
+    };
+
+    steps.classList.add("live");
+    updateSteps();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+  }
+
   const year = document.getElementById("year");
   if (year) year.textContent = String(new Date().getFullYear());
 })();
