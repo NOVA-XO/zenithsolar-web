@@ -8,11 +8,23 @@
 <meta property="og:title" content="Зенит Солар ХХК — Эрчим хүчний зураг төсөл">
 <meta property="og:description" content="ЦДАШ, дэд станц, нарны цахилгаан станц, дотор цахилгааны зураг төсөл ба хэмжилт.">
 <meta property="og:image" content="assets/img/substation-dusk.jpg">
-<meta name="theme-color" content="#0d336b">
+<meta name="theme-color" content="#070d18">
+<script>
+(() => {
+  let theme = "dark";
+  try {
+    if (localStorage.getItem("zs-theme") === "light") theme = "light";
+  } catch {}
+  document.documentElement.dataset.theme = theme;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = theme === "light" ? "#ffffff" : "#070d18";
+})();
+</script>
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/zs-theme.css">
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
@@ -31,7 +43,7 @@
       <a href="./#contact">Холбоо барих</a>
     </nav>
     <div class="top-actions">
-      <a class="btn btn-navy" href="tel:+97688852629">+976 8885 2629</a>
+      <a class="btn btn-line" href="tel:+97688852629">+976 8885 2629</a>
       <button class="icon-btn" id="theme" type="button" aria-label="Өнгөний горим солих">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       </button>
@@ -49,16 +61,23 @@
 </div></main>
 
 <footer class="foot">
-  <div class="wrap">
-    <div style="display:flex;align-items:center;gap:14px"><img class="logo-foot logo-light" src="assets/img/logo-mn.svg" alt="" width="57" height="34"><img class="logo-foot logo-dark" src="assets/img/logo-mn-white.svg" alt="" width="57" height="34"><span>© <span id="year">2026</span> Зенит Солар ХХК · Zenith Solar LLC</span></div>
-    <nav aria-label="Нэмэлт">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <img class="logo-foot logo-light" src="assets/img/logo-mn.svg" alt="" width="57" height="34">
+      <img class="logo-foot logo-dark" src="assets/img/logo-mn-white.svg" alt="" width="57" height="34">
+    </div>
+    <nav class="foot-links" aria-label="Нэмэлт">
       <a href="https://nova-xo.github.io/lineworks/">Zenith LineWorks</a>
       <a href="privacy.html">Нууцлал</a>
       <a href="accessibility.html">Хүртээмж</a>
     </nav>
+    <div class="foot-bottom">
+      © <span id="year">2026</span> Зенит Солар ХХК · Zenith Solar LLC
+    </div>
   </div>
 </footer>
 
+<script src="assets/zs-theme.js" defer></script>
 <script src="assets/site.js" defer></script>
 </body>
 </html>

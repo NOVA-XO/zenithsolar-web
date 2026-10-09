@@ -1,72 +1,183 @@
 (() => {
-  const root = document.documentElement;
+  "use strict";
 
-  /* Өнгөний горим: хэрэглэгчийн сонголтыг санана; хадгалах боломжгүй бол системийнхийг дагана. */
-  let saved = null;
-  try { saved = localStorage.getItem('zs-theme'); } catch { /* private mode */ }
-  if (saved) { root.dataset.theme = saved; }
-  const themeBtn = document.getElementById('theme');
-  if (themeBtn) {
-    themeBtn.addEventListener('click', () => {
-      const dark = root.dataset.theme
-        ? root.dataset.theme === 'dark'
-        : matchMedia('(prefers-color-scheme: dark)').matches;
-      root.dataset.theme = dark ? 'light' : 'dark';
-      try { localStorage.setItem('zs-theme', root.dataset.theme); } catch { /* ignore */ }
+  const gallery = document.getElementById("gallery");
+  const figures = gallery ? [...gallery.querySelectorAll("figure")] : [];
+  const filters = gallery
+    ? [...gallery.closest("section").querySelectorAll(".filters button")]
+    : [];
+
+  filters.forEach((button) => {
+    button.addEventListener("click", () => {
+      const category = button.dataset.filter || "all";
+
+      filters.forEach((item) => {
+        item.setAttribute("aria-pressed", String(item === button));
+      });
+
+      gallery.classList.toggle("filtered", category !== "all");
+
+      figures.forEach((figure) => {
+        figure.hidden =
+          category !== "all" && figure.dataset.cat !== category;
+      });
+    });
+  });
+
+  const box = document.getElementById("lightbox");
+  const big = box?.querySelector("img");
+  const closeButton = document.getElementById("lightbox-close");
+
+  if (box && big && closeButton) {
+    let returnFocus = null;
+    let previousOverflow = "";
+    const inertStates = new Map();
+
+    const close = () => {
+      if (box.hidden) return;
+
+      box.hidden = true;
+      big.removeAttribute("src");
+      big.alt = "";
+      document.body.style.overflow = previousOverflow;
+
+      inertStates.forEach((wasInert, element) => {
+        element.inert = wasInert;
+      });
+      inertStates.clear();
+
+      if (returnFocus?.isConnected) {
+        returnFocus.focus({ preventScroll: true });
+      }
+
+      returnFocus = null;
+    };
+
+    const open = (figure) => {
+      const image = figure.querySelector("img");
+      if (!image || figure.hidden || !box.hidden) return;
+
+      returnFocus = figure;
+      previousOverflow = document.body.style.overflow;
+      big.src = image.currentSrc || image.src;
+      big.alt = image.alt;
+      box.hidden = false;
+
+      [...document.body.children].forEach((element) => {
+        if (
+          element instanceof HTMLElement &&
+          element !== box &&
+          !element.contains(box) &&
+          !["SCRIPT", "STYLE", "LINK"].includes(element.tagName)
+        ) {
+          inertStates.set(element, element.inert);
+          element.inert = true;
+        }
+      });
+
+      document.body.style.overflow = "hidden";
+      closeButton.focus({ preventScroll: true });
+    };
+
+    figures.forEach((figure) => {
+      const image = figure.querySelector("img");
+      if (!image) return;
+
+      figure.tabIndex = 0;
+      figure.setAttribute("role", "button");
+      figure.setAttribute("aria-haspopup", "dialog");
+      figure.setAttribute("aria-controls", box.id);
+      figure.setAttribute("aria-label", `${image.alt} — томоор харах`);
+
+      figure.addEventListener("click", () => open(figure));
+
+      figure.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          open(figure);
+        }
+      });
+    });
+
+    closeButton.addEventListener("click", close);
+
+    box.addEventListener("click", (event) => {
+      if (event.target === box) close();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (box.hidden) return;
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+      } else if (event.key === "Tab") {
+        event.preventDefault();
+        closeButton.focus({ preventScroll: true });
+      }
+    });
+
+    document.addEventListener("focusin", (event) => {
+      if (
+        !box.hidden &&
+        event.target instanceof Node &&
+        !box.contains(event.target)
+      ) {
+        closeButton.focus({ preventScroll: true });
+      }
     });
   }
 
-  /* Гар утасны цэс. */
-  const menu = document.getElementById('menu');
-  const nav = document.getElementById('nav');
-  if (menu && nav) {
-    const set = (open) => { nav.classList.toggle('open', open); menu.setAttribute('aria-expanded', String(open)); };
-    menu.addEventListener('click', () => set(!nav.classList.contains('open')));
-    nav.addEventListener('click', (e) => { if (e.target.closest('a')) { set(false); } });
-  }
+  const items = [...document.querySelectorAll(".reveal")];
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let observer = null;
 
-  /* Төслийн зургийн ангилал. */
-  const buttons = document.querySelectorAll('.filters button');
-  buttons.forEach((b) => b.addEventListener('click', () => {
-    buttons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    document.getElementById('gallery').classList.toggle('filtered', b.dataset.filter !== 'all');
-    document.querySelectorAll('#gallery figure').forEach((f) => {
-      f.hidden = b.dataset.filter !== 'all' && f.dataset.cat !== b.dataset.filter;
+  const showAll = () => {
+    observer?.disconnect();
+    items.forEach((element) => {
+      element.classList.remove("is-pending");
+      element.classList.add("in");
     });
-  }));
+  };
 
-  /* Зургийг томоор харах. */
-  const box = document.getElementById('lightbox');
-  if (box) {
-    const big = box.querySelector('img');
-    const close = () => { box.hidden = true; big.removeAttribute('src'); };
-    document.querySelectorAll('#gallery figure').forEach((f) => {
-      f.tabIndex = 0;
-      const open = () => {
-        const img = f.querySelector('img');
-        big.src = img.currentSrc || img.src;
-        big.alt = img.alt;
-        box.hidden = false;
-        document.getElementById('lightbox-close').focus();
-      };
-      f.addEventListener('click', open);
-      f.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
-    });
-    box.addEventListener('click', (e) => { if (e.target === box || e.target.closest('#lightbox-close')) { close(); } });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !box.hidden) { close(); } });
-  }
+  if ("IntersectionObserver" in window && !reducedMotion.matches) {
+    try {
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("in");
+          observer.unobserve(entry.target);
+        });
+      }, {
+        rootMargin: "0px 0px -24px 0px",
+        threshold: 0
+      });
 
-  /* Гүйлгэхэд хэсгүүд зөөлөн гарч ирнэ (хөдөлгөөн багасгах тохиргоотой бол шууд). */
-  const items = document.querySelectorAll('.reveal');
-  if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const io = new IntersectionObserver((entries) => entries.forEach((en) => {
-      if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
-    }), { rootMargin: '0px 0px -8% 0px' });
-    items.forEach((el) => io.observe(el));
+      items.forEach((element) => {
+        if (element.getBoundingClientRect().top < window.innerHeight) {
+          element.classList.add("in");
+        } else {
+          element.classList.add("is-pending");
+          observer.observe(element);
+        }
+      });
+    } catch {
+      showAll();
+    }
   } else {
-    items.forEach((el) => el.classList.add('in'));
+    showAll();
   }
 
-  const year = document.getElementById('year');
-  if (year) { year.textContent = String(new Date().getFullYear()); }
+  const handleMotionChange = (event) => {
+    if (event.matches) showAll();
+  };
+
+  if (reducedMotion.addEventListener) {
+    reducedMotion.addEventListener("change", handleMotionChange);
+  } else {
+    reducedMotion.addListener(handleMotionChange);
+  }
+
+  const year = document.getElementById("year");
+  if (year) year.textContent = String(new Date().getFullYear());
 })();
