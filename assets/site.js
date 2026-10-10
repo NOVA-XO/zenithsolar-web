@@ -179,19 +179,54 @@
   }
 
   const steps = document.getElementById("steps");
-  if (steps && !reducedMotion.matches) {
+  if (steps) {
     const stepItems = [...steps.children];
+    const vertical = window.matchMedia("(max-width: 760px)");
+    const clamp = (value) => Math.min(1, Math.max(0, value));
     let frame = 0;
 
     const updateSteps = () => {
       frame = 0;
       const rect = steps.getBoundingClientRect();
-      const start = window.innerHeight * 0.8;
-      const progress = Math.min(1, Math.max(0, (start - rect.top) / (rect.height + window.innerHeight * 0.3)));
-      steps.style.setProperty("--p", progress.toFixed(3));
+      const points = stepItems.map((item) => {
+        const dot = item.querySelector(".step-dot").getBoundingClientRect();
+        return {
+          x: dot.left + dot.width / 2,
+          y: dot.top + dot.height / 2
+        };
+      });
+
+      if (!points.length) return;
+
+      const first = points[0];
+      const last = points[points.length - 1];
+      const axis = vertical.matches ? "y" : "x";
+      const length = Math.max(0, last[axis] - first[axis]);
+
+      steps.style.setProperty("--track-length", `${length}px`);
+      steps.style.setProperty(
+        "--track-left",
+        `${first.x - rect.left - (vertical.matches ? 1 : 0)}px`
+      );
+      steps.style.setProperty(
+        "--track-top",
+        `${first.y - rect.top - (vertical.matches ? 0 : 1)}px`
+      );
+
+      let progress = 1;
+      if (!reducedMotion.matches) {
+        const trigger = window.innerHeight * 0.8;
+        progress = vertical.matches
+          ? clamp((trigger - first.y) / Math.max(1, length))
+          : clamp((trigger - first.y) / Math.max(1, window.innerHeight * 0.45));
+      }
+
+      steps.style.setProperty("--p", String(progress));
+      steps.classList.toggle("live", !reducedMotion.matches);
+
       stepItems.forEach((item, index) => {
-        const at = stepItems.length > 1 ? index / (stepItems.length - 1) : 0;
-        item.classList.toggle("done", progress >= at - 0.001);
+        const at = length ? (points[index][axis] - first[axis]) / length : 0;
+        item.classList.toggle("done", progress >= at);
       });
     };
 
@@ -199,10 +234,27 @@
       if (!frame) frame = requestAnimationFrame(updateSteps);
     };
 
-    steps.classList.add("live");
-    updateSteps();
-    window.addEventListener("scroll", requestUpdate, { passive: true });
+    const syncMotion = () => {
+      window.removeEventListener("scroll", requestUpdate);
+      if (!reducedMotion.matches) {
+        window.addEventListener("scroll", requestUpdate, { passive: true });
+      }
+      requestUpdate();
+    };
+
+    if (reducedMotion.addEventListener) {
+      reducedMotion.addEventListener("change", syncMotion);
+    } else {
+      reducedMotion.addListener(syncMotion);
+    }
+
     window.addEventListener("resize", requestUpdate);
+    if ("ResizeObserver" in window) {
+      new ResizeObserver(requestUpdate).observe(steps);
+    }
+
+    updateSteps();
+    syncMotion();
   }
 
   const year = document.getElementById("year");

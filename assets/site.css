@@ -70,6 +70,8 @@ section.soft {
 }
 
 .hero .wrap {
+  position: relative;
+  z-index: 1;
   width: 100%;
   padding-top: 120px;
   padding-bottom: 128px;
@@ -77,14 +79,13 @@ section.soft {
 
 .hero-lines {
   position: absolute;
-  top: 50%;
-  right: max(12px, calc((100vw - var(--wrap)) / 2));
-  z-index: -1;
-  width: min(46vw, 620px);
+  right: max(12px, calc((100% - var(--wrap)) / 2));
+  bottom: 5%;
+  z-index: 0;
+  width: min(41vw, 560px);
   height: auto;
   overflow: visible;
   pointer-events: none;
-  transform: translateY(-46%);
   animation: lines-settle 1.4s ease 3.2s forwards;
 }
 
@@ -276,19 +277,19 @@ section.soft {
 .steps::after {
   content: "";
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: var(--track-top, 10px);
+  left: var(--track-left, 10px);
   height: 2px;
   border-radius: 2px;
 }
 
 .steps::before {
-  right: 10px;
+  width: var(--track-length, calc(75% + 21px));
   background: var(--line);
 }
 
 .steps::after {
-  width: calc((100% - 20px) * var(--p));
+  width: calc(var(--track-length, calc(75% + 21px)) * var(--p));
   background: var(--sun);
 }
 
@@ -984,11 +985,13 @@ section.soft {
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1180px) {
   .hero-lines {
     display: none;
   }
+}
 
+@media (max-width: 1000px) {
   .foot .wrap.foot-cols {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1055,10 +1058,6 @@ section.soft {
 
   .hero .wrap {
     padding-top: 80px;
-    padding-bottom: 32px;
-  }
-
-  .hero .wrap {
     padding-bottom: 72px;
   }
 
@@ -1092,19 +1091,17 @@ section.soft {
 
   .steps::before,
   .steps::after {
-    top: 10px;
-    left: 10px;
+    top: var(--track-top, 12px);
+    left: var(--track-left, 10px);
     width: 2px;
   }
 
   .steps::before {
-    right: auto;
-    bottom: 10px;
-    height: auto;
+    height: var(--track-length, calc(100% - 22px));
   }
 
   .steps::after {
-    height: calc((100% - 20px) * var(--p));
+    height: calc(var(--track-length, calc(100% - 22px)) * var(--p));
   }
 
   .step-dot {
